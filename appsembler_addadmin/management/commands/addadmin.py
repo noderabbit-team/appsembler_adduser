@@ -12,25 +12,30 @@ class Command(NoArgsCommand):
         make_option('--username',
                     action='store',
                     dest='username',
-                    default=False),
+                    default=''),
         make_option('--email',
                     action='store',
                     dest='email',
-                    default=False),
+                    default=''),
         make_option('--pswd',
                     action='store',
                     dest='pswd',
-                    default=False),
+                    default=''),
         )
 
     def handle_noargs(self, **options):
-        if User.objects.filter(
-            Q(username__iexact=options['username'])|
-            Q(email__iexact=options['email'])|
-            ):
-            print "Admin %s already exists!" % options['username']
+        if not options['username'] or \
+           not options['pswd'] or \
+           not options['email']:
+            return "Missing parameters!\n"
+
+        if User.objects.filter(Q(username=options['username']) |
+                               Q(email=options['email'])):
+            self.stdout.write(u"Admin %s already exists!\n" % \
+                           options['username'])
+            return
 
         admin = User.objects.create_superuser(username=options['username'],
                                               email=options['email'],
                                               password=options['pswd'])
-        print "Created admin %s!" % admin.username
+        self.stdout.write(u"Created admin %s!\n" % admin.username)
